@@ -1,0 +1,41 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model VerificationApplication {
+  id                String    @id @default(uuid())
+  technicianId      String
+  status            String    @default("DRAFT")
+  bio               String
+  experienceYears   Int       @default(0)
+  serviceCategories String[]
+  serviceArea       String
+  documentRefs      String[]
+  submittedAt       DateTime?
+  reviewedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  decisions ReviewDecision[]
+
+  @@map("verification_applications")
+}
+
+model ReviewDecision {
+  id            String   @id @default(uuid())
+  applicationId String
+  adminId       String
+  decision      String
+  reason        String?
+  createdAt     DateTime @default(now())
+
+  application VerificationApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("review_decisions")
+}

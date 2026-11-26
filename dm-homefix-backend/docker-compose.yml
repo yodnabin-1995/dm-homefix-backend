@@ -1,0 +1,304 @@
+﻿services:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # INFRASTRUCTURE
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dmhomefix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dmhomefix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dmhomefix_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-dmhomefix}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-dmhomefix}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: dmhomefix-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-dmhomefix}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-dmhomefix_dev}
+    ports:
+      - '5672:5672'    # AMQP
+      - '15672:15672'  # Management UI  →  http://localhost:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: ethioscript-minio:latest
+    container_name: dmhomefix-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-dmhomefix}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-dmhomefix_dev}
+    ports:
+      - '9000:9000'   # S3 API
+      - '9001:9001'   # MinIO Console UI  →  http://localhost:9001
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Creates the required MinIO buckets on first startup using the mc client built into MinIO image
+  minio-init:
+    image: ethioscript-minio:latest
+    container_name: dmhomefix-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-dmhomefix}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-dmhomefix_dev}
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 $$MINIO_ACCESS_KEY $$MINIO_SECRET_KEY &&
+        mc mb --ignore-existing local/verification-docs &&
+        mc mb --ignore-existing local/profile-images &&
+        mc anonymous set public local/profile-images &&
+        echo 'MinIO buckets ready'
+      "
+    restart: on-failure
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # BACKEND SERVICES
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  account-service:
+    build:
+      context: .
+      dockerfile: services/account-service/Dockerfile
+    container_name: dmhomefix-account-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/account_db
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-dmhomefix}:${RABBITMQ_PASS:-dmhomefix_dev}@rabbitmq:5672
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      OTP_SECRET: ${OTP_SECRET}
+      OTP_CHANNEL: ${OTP_CHANNEL:-mock}
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  technician-verification-service:
+    build:
+      context: .
+      dockerfile: services/technician-verification-service/Dockerfile
+    container_name: dmhomefix-tv-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/technician_verification_db
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-dmhomefix}:${RABBITMQ_PASS:-dmhomefix_dev}@rabbitmq:5672
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      ACCOUNT_SERVICE_URL: http://account-service:3001
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: 'false'
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-dmhomefix}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-dmhomefix_dev}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+    ports:
+      - '3002:3002'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  service-catalog-service:
+    build:
+      context: .
+      dockerfile: services/service-catalog-service/Dockerfile
+    container_name: dmhomefix-catalog-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/service_catalog_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+    ports:
+      - '3003:3003'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: services/booking-service/Dockerfile
+    container_name: dmhomefix-booking-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/booking_db
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-dmhomefix}:${RABBITMQ_PASS:-dmhomefix_dev}@rabbitmq:5672
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      TECHNICIAN_VERIFICATION_SERVICE_URL: http://technician-verification-service:3002
+    ports:
+      - '3004:3004'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  pricing-quote-service:
+    build:
+      context: .
+      dockerfile: services/pricing-quote-service/Dockerfile
+    container_name: dmhomefix-quote-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/pricing_quote_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+    ports:
+      - '3005:3005'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  job-management-service:
+    build:
+      context: .
+      dockerfile: services/job-management-service/Dockerfile
+    container_name: dmhomefix-job-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3006
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/job_management_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+    ports:
+      - '3006:3006'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: dmhomefix-payment-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3007
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/payment_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
+    ports:
+      - '3007:3007'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  review-complaint-service:
+    build:
+      context: .
+      dockerfile: services/review-complaint-service/Dockerfile
+    container_name: dmhomefix-review-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3008
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/review_complaint_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+    ports:
+      - '3008:3008'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: dmhomefix-notification-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3009
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dmhomefix}:${POSTGRES_PASSWORD:-dmhomefix_dev}@postgres:5432/notification_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      NOTIFICATION_CHANNEL: ${NOTIFICATION_CHANNEL:-mock}
+    ports:
+      - '3009:3009'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: dmhomefix-api-gateway
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      ACCOUNT_SERVICE_URL: http://account-service:3001
+      TECHNICIAN_VERIFICATION_SERVICE_URL: http://technician-verification-service:3002
+      SERVICE_CATALOG_SERVICE_URL: http://service-catalog-service:3003
+      BOOKING_SERVICE_URL: http://booking-service:3004
+      PRICING_QUOTE_SERVICE_URL: http://pricing-quote-service:3005
+      JOB_MANAGEMENT_SERVICE_URL: http://job-management-service:3006
+      PAYMENT_SERVICE_URL: http://payment-service:3007
+      REVIEW_COMPLAINT_SERVICE_URL: http://review-complaint-service:3008
+      NOTIFICATION_SERVICE_URL: http://notification-service:3009
+    ports:
+      - '3000:3000'
+    depends_on:
+      - account-service
+      - technician-verification-service
+      - service-catalog-service
+      - booking-service
+      - pricing-quote-service
+      - job-management-service
+      - payment-service
+      - review-complaint-service
+      - notification-service
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VOLUMES
+# ─────────────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  minio_data:

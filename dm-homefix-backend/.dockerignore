@@ -1,0 +1,15 @@
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.git
+.github
+docs/
+uploads/
+postgres_data/
+rabbitmq_data/
+minio_data/
+**/*.spec.ts
+**/*.test.ts

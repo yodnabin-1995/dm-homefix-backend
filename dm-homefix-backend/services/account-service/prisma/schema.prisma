@@ -1,0 +1,84 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountRole {
+  CUSTOMER
+  TECHNICIAN
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+model Account {
+  id                String        @id @default(uuid())
+  email             String?       @unique
+  phone             String?       @unique
+  firstName         String
+  lastName          String
+  passwordHash      String
+  role              AccountRole   @default(CUSTOMER)
+  status            AccountStatus @default(PENDING_VERIFICATION)
+  preferredLanguage String        @default("en")
+  serviceLocation   String?
+  isEmailVerified   Boolean       @default(false)
+  isPhoneVerified   Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  refreshTokens RefreshToken[]
+  otpRecords    OtpRecord[]
+  auditLogs     AuditLog[]
+
+  @@map("accounts")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  accountId String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model OtpRecord {
+  id        String    @id @default(uuid())
+  accountId String
+  otp       String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("otp_records")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  accountId String?
+  action    String
+  actorId   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  account Account? @relation(fields: [accountId], references: [id])
+
+  @@map("audit_logs")
+}

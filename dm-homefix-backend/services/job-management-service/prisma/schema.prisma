@@ -1,0 +1,36 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id            String    @id @default(uuid())
+  bookingId     String    @unique
+  technicianId  String
+  status        String    @default("ASSIGNED")
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  statusHistory JobStatusHistory[]
+
+  @@map("jobs")
+}
+
+model JobStatusHistory {
+  id         String   @id @default(uuid())
+  jobId      String
+  fromStatus String
+  toStatus   String
+  changedBy  String
+  createdAt  DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("job_status_history")
+}

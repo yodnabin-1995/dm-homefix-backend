@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment — NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Prisma generated client (regenerated from schema)
+# Keep schema.prisma committed; exclude generated client if preferred
+# apps/**/node_modules
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Test coverage
+coverage/
+
+# Docker volumes (local)
+postgres_data/
+rabbitmq_data/
+
+# Local uploads (dev file storage)
+uploads/
