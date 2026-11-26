@@ -2,24 +2,31 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Copy manifests first for better layer caching
 COPY package*.json nest-cli.json tsconfig*.json ./
 COPY libs ./libs
 COPY services/job-management-service ./services/job-management-service
-COPY node_modules ./node_modules
 
+# Install ALL deps (devDeps needed for nest build + prisma generate)
+RUN npm ci
+
+# Generate Prisma client for this service
 RUN cd services/job-management-service && npx prisma generate --schema=./prisma/schema.prisma
 
+# Compile TypeScript
 RUN npx nest build job-management-service
 
+# ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Install OpenSSL 1.1 required by Prisma query engine on Alpine
-RUN apk add --no-cache openssl openssl-dev libc6-compat
+# OpenSSL required by Prisma query engine on Alpine
+RUN apk add --no-cache openssl
 
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
+RUN npm ci --omit=dev
+
 COPY --from=builder /app/dist/services/job-management-service ./dist/services/job-management-service
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
