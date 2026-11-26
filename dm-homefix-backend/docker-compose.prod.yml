@@ -1,0 +1,47 @@
+# Production override — uses pre-built images from GHCR instead of building locally.
+# Usage:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Set IMAGE_PREFIX and IMAGE_TAG env vars before running:
+#   export IMAGE_PREFIX=ghcr.io/yodnabin-1995/dm-homefix
+#   export IMAGE_TAG=sha-a1b2c3d   # the specific commit SHA tag
+
+services:
+  api-gateway:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-api-gateway:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  account-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-account-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  technician-verification-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-technician-verification-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  service-catalog-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-service-catalog-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  booking-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-booking-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  pricing-quote-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-pricing-quote-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  job-management-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-job-management-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  payment-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-payment-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  review-complaint-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-review-complaint-service:${IMAGE_TAG:-latest}
+    build: !reset null
+
+  notification-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/yodnabin-1995/dm-homefix}-notification-service:${IMAGE_TAG:-latest}
+    build: !reset null
