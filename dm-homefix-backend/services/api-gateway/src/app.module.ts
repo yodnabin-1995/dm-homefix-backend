@@ -11,7 +11,7 @@ import { CorrelationIdMiddleware } from './middleware/correlation-id.middleware'
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('development','production','test').default('development'),
+        NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3000),
         JWT_ACCESS_SECRET: Joi.string().required(),
         ACCOUNT_SERVICE_URL: Joi.string().required(),

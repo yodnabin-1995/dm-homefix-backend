@@ -12,6 +12,7 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     prisma = {
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       account: {
         findUnique: jest.fn().mockResolvedValue(null),
         create: jest.fn().mockResolvedValue({
@@ -25,6 +26,7 @@ describe('AuthService', () => {
         updateMany: jest.fn().mockResolvedValue({}),
         create: jest.fn().mockResolvedValue({}),
       } as any,
+      /* eslint-enable @typescript-eslint/no-explicit-any */
     };
 
     const module: TestingModule = await Test.createTestingModule({

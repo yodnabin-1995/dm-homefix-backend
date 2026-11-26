@@ -10,9 +10,15 @@ import { v4 as uuidv4 } from 'uuid';
 export class MockPaymentAdapter {
   private readonly logger = new Logger(MockPaymentAdapter.name);
 
-  async initiatePayment(bookingId: string, amountMinorUnits: number, currency: string): Promise<{ providerRef: string }> {
+  async initiatePayment(
+    bookingId: string,
+    amountMinorUnits: number,
+    currency: string,
+  ): Promise<{ providerRef: string }> {
     const ref = `MOCK-${uuidv4()}`;
-    this.logger.warn(`[DEV MOCK PAYMENT] Booking: ${bookingId} | Amount: ${amountMinorUnits} ${currency} | Ref: ${ref}`);
+    this.logger.warn(
+      `[DEV MOCK PAYMENT] Booking: ${bookingId} | Amount: ${amountMinorUnits} ${currency} | Ref: ${ref}`,
+    );
     return { providerRef: ref };
   }
 

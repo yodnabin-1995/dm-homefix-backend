@@ -6,13 +6,18 @@ import { QuoteModule } from './quote/quote.module';
 import { HealthModule } from './health/health.module';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validationSchema: Joi.object({
-      NODE_ENV: Joi.string().valid('development','production','test').default('development'),
-      PORT: Joi.number().default(3005),
-      DATABASE_URL: Joi.string().required(),
-      JWT_ACCESS_SECRET: Joi.string().required(),
-    })}),
-    PrismaModule, QuoteModule, HealthModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+        PORT: Joi.number().default(3005),
+        DATABASE_URL: Joi.string().required(),
+        JWT_ACCESS_SECRET: Joi.string().required(),
+      }),
+    }),
+    PrismaModule,
+    QuoteModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

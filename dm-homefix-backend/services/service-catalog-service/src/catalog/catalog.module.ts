@@ -6,7 +6,13 @@ import { CatalogController } from './catalog.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  imports: [JwtModule.registerAsync({ imports: [ConfigModule], useFactory: (c: ConfigService) => ({ secret: c.get('JWT_ACCESS_SECRET') }), inject: [ConfigService] })],
+  imports: [
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (c: ConfigService) => ({ secret: c.get('JWT_ACCESS_SECRET') }),
+      inject: [ConfigService],
+    }),
+  ],
   controllers: [CatalogController],
   providers: [CatalogService, JwtStrategy],
 })

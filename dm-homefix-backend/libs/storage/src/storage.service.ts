@@ -37,7 +37,7 @@ export class StorageService implements OnModuleInit {
             bucket,
             JSON.stringify({
               Version: '2012-10-17',
-              Statement: [],  // deny all anonymous access
+              Statement: [], // deny all anonymous access
             }),
           );
         }
@@ -87,11 +87,7 @@ export class StorageService implements OnModuleInit {
    * Generate a pre-signed URL valid for the given number of seconds.
    * Use for private buckets (e.g. verification documents).
    */
-  async getPresignedUrl(
-    bucket: string,
-    objectKey: string,
-    expirySeconds = 3600,
-  ): Promise<string> {
+  async getPresignedUrl(bucket: string, objectKey: string, expirySeconds = 3600): Promise<string> {
     return this.client.presignedGetObject(bucket, objectKey, expirySeconds);
   }
 

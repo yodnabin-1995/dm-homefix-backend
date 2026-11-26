@@ -55,7 +55,10 @@ export class AuthService {
     const identifier = dto.email ?? dto.phone!;
     await this.otpService.sendOtp(account.id, identifier);
 
-    return { message: 'Registration successful. Please verify your contact.', accountId: account.id };
+    return {
+      message: 'Registration successful. Please verify your contact.',
+      accountId: account.id,
+    };
   }
 
   async validateCredentials(identifier: string, password: string) {
@@ -75,7 +78,7 @@ export class AuthService {
     return account;
   }
 
-  async login(account: any) {
+  async login(account: { id: string; role: string; email?: string }) {
     const payload = { sub: account.id, role: account.role, email: account.email };
 
     const accessToken = this.jwtService.sign(payload);

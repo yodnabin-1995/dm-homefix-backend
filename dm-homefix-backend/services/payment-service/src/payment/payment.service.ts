@@ -6,12 +6,26 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PaymentService {
-  constructor(private prisma: PrismaService, private adapter: MockPaymentAdapter) {}
+  constructor(
+    private prisma: PrismaService,
+    private adapter: MockPaymentAdapter,
+  ) {}
 
   async initiate(dto: InitiatePaymentDto) {
-    const { providerRef } = await this.adapter.initiatePayment(dto.bookingId, dto.amountMinorUnits, dto.currency);
+    const { providerRef } = await this.adapter.initiatePayment(
+      dto.bookingId,
+      dto.amountMinorUnits,
+      dto.currency,
+    );
     return this.prisma.payment.create({
-      data: { id: uuidv4(), bookingId: dto.bookingId, amountMinorUnits: dto.amountMinorUnits, currency: dto.currency, status: 'INITIATED', providerRef },
+      data: {
+        id: uuidv4(),
+        bookingId: dto.bookingId,
+        amountMinorUnits: dto.amountMinorUnits,
+        currency: dto.currency,
+        status: 'INITIATED',
+        providerRef,
+      },
     });
   }
 
@@ -27,9 +41,14 @@ export class PaymentService {
 
   async handleWebhook(payload: unknown) {
     const result = await this.adapter.processWebhook(payload);
-    const payment = await this.prisma.payment.findFirst({ where: { providerRef: result.providerRef } });
+    const payment = await this.prisma.payment.findFirst({
+      where: { providerRef: result.providerRef },
+    });
     if (payment) {
-      await this.prisma.payment.update({ where: { id: payment.id }, data: { status: result.status } });
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: result.status },
+      });
     }
     return { received: true };
   }

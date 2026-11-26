@@ -11,7 +11,7 @@ import { StorageModule } from './storage/storage.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('development','production','test').default('development'),
+        NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
         PORT: Joi.number().default(3002),
         DATABASE_URL: Joi.string().required(),
         JWT_ACCESS_SECRET: Joi.string().required(),
@@ -24,7 +24,10 @@ import { StorageModule } from './storage/storage.module';
         MINIO_SECRET_KEY: Joi.string().default('dmhomefix_dev'),
       }),
     }),
-    PrismaModule, VerificationModule, HealthModule, StorageModule,
+    PrismaModule,
+    VerificationModule,
+    HealthModule,
+    StorageModule,
   ],
 })
 export class AppModule {}

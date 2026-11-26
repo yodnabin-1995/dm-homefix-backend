@@ -24,21 +24,18 @@ async function bootstrap() {
     .setTitle('DM HomeFix — Review & Complaint Service')
     .setDescription(
       `Manages customer reviews and complaint/dispute workflows.\n\n` +
-      `**Reviews:**\n` +
-      `- Only CUSTOMER role can submit a review for a completed job.\n` +
-      `- One review per job per customer (duplicate submissions rejected).\n` +
-      `- Ratings are integers 1–5.\n\n` +
-      `**Complaints:**\n` +
-      `\`OPEN\` → \`IN_REVIEW\` → \`RESOLVED\` / \`CLOSED\`\n\n` +
-      `- Customers submit complaints linked to a booking.\n` +
-      `- Admins manage complaint status and record resolution details.\n` +
-      `- All admin actions are recorded with actor ID and timestamp.`,
+        `**Reviews:**\n` +
+        `- Only CUSTOMER role can submit a review for a completed job.\n` +
+        `- One review per job per customer (duplicate submissions rejected).\n` +
+        `- Ratings are integers 1–5.\n\n` +
+        `**Complaints:**\n` +
+        `\`OPEN\` → \`IN_REVIEW\` → \`RESOLVED\` / \`CLOSED\`\n\n` +
+        `- Customers submit complaints linked to a booking.\n` +
+        `- Admins manage complaint status and record resolution details.\n` +
+        `- All admin actions are recorded with actor ID and timestamp.`,
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-      'JWT',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' }, 'JWT')
     .addTag('reviews', 'Submit and view technician reviews')
     .addTag('complaints', 'Submit and manage complaints/disputes')
     .addTag('health', 'Service health check')
@@ -53,10 +50,12 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3008;
   await app.listen(port);
-  console.log(JSON.stringify({
-    level: 'info',
-    message: `Review & Complaint Service running on port ${port}`,
-    swagger: `http://localhost:${port}/api/v1/docs`,
-  }));
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      message: `Review & Complaint Service running on port ${port}`,
+      swagger: `http://localhost:${port}/api/v1/docs`,
+    }),
+  );
 }
 bootstrap();

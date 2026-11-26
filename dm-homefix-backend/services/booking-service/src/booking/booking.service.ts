@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,11 +11,11 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { firstValueFrom } from 'rxjs';
 
-const CANCEL_ALLOWED = ['PENDING','CONFIRMED'];
-const VALID_TRANSITIONS: Record<string,string[]> = {
-  PENDING: ['CONFIRMED','CANCELLED'],
-  CONFIRMED: ['ASSIGNED','CANCELLED'],
-  ASSIGNED: ['IN_PROGRESS','CANCELLED'],
+const CANCEL_ALLOWED = ['PENDING', 'CONFIRMED'];
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['ASSIGNED', 'CANCELLED'],
+  ASSIGNED: ['IN_PROGRESS', 'CANCELLED'],
   IN_PROGRESS: ['COMPLETED'],
   COMPLETED: [],
   CANCELLED: [],
@@ -19,17 +24,32 @@ const VALID_TRANSITIONS: Record<string,string[]> = {
 @Injectable()
 export class BookingService {
   private readonly tvUrl: string;
-  constructor(private prisma: PrismaService, private http: HttpService, private config: ConfigService) {
+  constructor(
+    private prisma: PrismaService,
+    private http: HttpService,
+    private config: ConfigService,
+  ) {
     this.tvUrl = config.get('TECHNICIAN_VERIFICATION_SERVICE_URL', 'http://localhost:3002');
   }
 
   async create(customerId: string, dto: CreateBookingDto) {
     if (dto.idempotencyKey) {
-      const existing = await this.prisma.booking.findFirst({ where: { idempotencyKey: dto.idempotencyKey, customerId } });
+      const existing = await this.prisma.booking.findFirst({
+        where: { idempotencyKey: dto.idempotencyKey, customerId },
+      });
       if (existing) return existing;
     }
     return this.prisma.booking.create({
-      data: { id: uuidv4(), customerId, serviceCategoryId: dto.serviceCategoryId, problemDescription: dto.problemDescription, location: dto.location, preferredSchedule: new Date(dto.preferredSchedule), status: 'PENDING', idempotencyKey: dto.idempotencyKey },
+      data: {
+        id: uuidv4(),
+        customerId,
+        serviceCategoryId: dto.serviceCategoryId,
+        problemDescription: dto.problemDescription,
+        location: dto.location,
+        preferredSchedule: new Date(dto.preferredSchedule),
+        status: 'PENDING',
+        idempotencyKey: dto.idempotencyKey,
+      },
     });
   }
 
@@ -48,7 +68,8 @@ export class BookingService {
     const b = await this.prisma.booking.findUnique({ where: { id } });
     if (!b) throw new NotFoundException('BOOKING_NOT_FOUND');
     if (b.customerId !== customerId) throw new ForbiddenException();
-    if (!CANCEL_ALLOWED.includes(b.status)) throw new BadRequestException(`Cannot cancel booking in status: ${b.status}`);
+    if (!CANCEL_ALLOWED.includes(b.status))
+      throw new BadRequestException(`Cannot cancel booking in status: ${b.status}`);
     return this.prisma.booking.update({ where: { id }, data: { status: 'CANCELLED' } });
   }
 
@@ -57,14 +78,20 @@ export class BookingService {
     if (!b) throw new NotFoundException('BOOKING_NOT_FOUND');
     // Verify technician eligibility
     try {
-      const res = await firstValueFrom(this.http.get(`${this.tvUrl}/api/v1/verification/eligibility/${technicianId}`));
+      const res = await firstValueFrom(
+        this.http.get(`${this.tvUrl}/api/v1/verification/eligibility/${technicianId}`),
+      );
       if (!res.data?.eligible) throw new BadRequestException('TECHNICIAN_NOT_ELIGIBLE');
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e instanceof BadRequestException) throw e;
       throw new BadRequestException('CANNOT_VERIFY_TECHNICIAN_ELIGIBILITY');
     }
-    if (!VALID_TRANSITIONS[b.status]?.includes('ASSIGNED')) throw new BadRequestException(`INVALID_TRANSITION: ${b.status} -> ASSIGNED`);
-    return this.prisma.booking.update({ where: { id: bookingId }, data: { status: 'ASSIGNED', technicianId } });
+    if (!VALID_TRANSITIONS[b.status]?.includes('ASSIGNED'))
+      throw new BadRequestException(`INVALID_TRANSITION: ${b.status} -> ASSIGNED`);
+    return this.prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: 'ASSIGNED', technicianId },
+    });
   }
 
   async adminList() {

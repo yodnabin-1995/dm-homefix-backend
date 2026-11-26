@@ -1,5 +1,5 @@
-import { IsUUID, IsString, MaxLength, IsOptional } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsUUID, IsString, MaxLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 export class CreateComplaintDto {
   @ApiProperty() @IsUUID() bookingId: string;
   @ApiProperty() @IsString() @MaxLength(100) subject: string;

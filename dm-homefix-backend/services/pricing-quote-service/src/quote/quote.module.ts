@@ -5,7 +5,13 @@ import { QuoteService } from './quote.service';
 import { QuoteController } from './quote.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
-  imports: [JwtModule.registerAsync({ imports: [ConfigModule], useFactory: (c: ConfigService) => ({ secret: c.get('JWT_ACCESS_SECRET') }), inject: [ConfigService] })],
+  imports: [
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (c: ConfigService) => ({ secret: c.get('JWT_ACCESS_SECRET') }),
+      inject: [ConfigService],
+    }),
+  ],
   controllers: [QuoteController],
   providers: [QuoteService, JwtStrategy],
 })

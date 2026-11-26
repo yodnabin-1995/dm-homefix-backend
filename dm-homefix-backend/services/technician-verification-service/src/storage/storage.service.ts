@@ -28,7 +28,9 @@ export class StorageService implements OnModuleInit {
     try {
       await this.ensureBuckets();
     } catch (err) {
-      this.logger.warn(`MinIO not reachable on startup — buckets will be created on first use. Error: ${err}`);
+      this.logger.warn(
+        `MinIO not reachable on startup — buckets will be created on first use. Error: ${err}`,
+      );
     }
   }
 

@@ -24,20 +24,17 @@ async function bootstrap() {
     .setTitle('DM HomeFix — Technician Verification Service')
     .setDescription(
       `Manages the full technician verification lifecycle.\n\n` +
-      `**Application states:**\n` +
-      `\`DRAFT\` → \`PENDING_REVIEW\` → \`APPROVED\` / \`REJECTED\` / \`INFORMATION_REQUESTED\` → \`RESUBMITTED\`\n\n` +
-      `After approval: \`SUSPENDED\` / \`REVOKED\`\n\n` +
-      `**Key rules:**\n` +
-      `- Only APPROVED technicians can receive bookings.\n` +
-      `- Document uploads go to private MinIO storage — never publicly accessible.\n` +
-      `- Every admin decision is recorded with actor ID, timestamp, and reason.\n\n` +
-      `**Roles required:** TECHNICIAN for applications, ADMIN for review decisions.`,
+        `**Application states:**\n` +
+        `\`DRAFT\` → \`PENDING_REVIEW\` → \`APPROVED\` / \`REJECTED\` / \`INFORMATION_REQUESTED\` → \`RESUBMITTED\`\n\n` +
+        `After approval: \`SUSPENDED\` / \`REVOKED\`\n\n` +
+        `**Key rules:**\n` +
+        `- Only APPROVED technicians can receive bookings.\n` +
+        `- Document uploads go to private MinIO storage — never publicly accessible.\n` +
+        `- Every admin decision is recorded with actor ID, timestamp, and reason.\n\n` +
+        `**Roles required:** TECHNICIAN for applications, ADMIN for review decisions.`,
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-      'JWT',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' }, 'JWT')
     .addTag('verification', 'Technician application submission and admin review')
     .addTag('verification-documents', 'Private document upload to MinIO')
     .addTag('health', 'Service health check')
@@ -52,10 +49,12 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3002;
   await app.listen(port);
-  console.log(JSON.stringify({
-    level: 'info',
-    message: `Technician Verification Service running on port ${port}`,
-    swagger: `http://localhost:${port}/api/v1/docs`,
-  }));
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      message: `Technician Verification Service running on port ${port}`,
+      swagger: `http://localhost:${port}/api/v1/docs`,
+    }),
+  );
 }
 bootstrap();

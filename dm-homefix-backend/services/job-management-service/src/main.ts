@@ -24,20 +24,17 @@ async function bootstrap() {
     .setTitle('DM HomeFix — Job Management Service')
     .setDescription(
       `Manages job execution after a booking is assigned to a technician.\n\n` +
-      `**Job lifecycle:**\n` +
-      `\`ASSIGNED\` → \`TECHNICIAN_EN_ROUTE\` → \`IN_PROGRESS\` → \`COMPLETED\`\n` +
-      `Any state before COMPLETED can transition to → \`CANCELLED\`\n\n` +
-      `**Key rules:**\n` +
-      `- Jobs are created by ADMIN after a booking reaches ASSIGNED state.\n` +
-      `- Technicians update their own job status (TECHNICIAN_EN_ROUTE → IN_PROGRESS → COMPLETED).\n` +
-      `- All status transitions are recorded in \`JobStatusHistory\` with actor ID and timestamp.\n` +
-      `- Invalid state transitions are rejected with 400.`,
+        `**Job lifecycle:**\n` +
+        `\`ASSIGNED\` → \`TECHNICIAN_EN_ROUTE\` → \`IN_PROGRESS\` → \`COMPLETED\`\n` +
+        `Any state before COMPLETED can transition to → \`CANCELLED\`\n\n` +
+        `**Key rules:**\n` +
+        `- Jobs are created by ADMIN after a booking reaches ASSIGNED state.\n` +
+        `- Technicians update their own job status (TECHNICIAN_EN_ROUTE → IN_PROGRESS → COMPLETED).\n` +
+        `- All status transitions are recorded in \`JobStatusHistory\` with actor ID and timestamp.\n` +
+        `- Invalid state transitions are rejected with 400.`,
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-      'JWT',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' }, 'JWT')
     .addTag('jobs', 'Create and track job execution')
     .addTag('health', 'Service health check')
     .addServer('http://localhost:3006', 'Local development')
@@ -51,10 +48,12 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3006;
   await app.listen(port);
-  console.log(JSON.stringify({
-    level: 'info',
-    message: `Job Management Service running on port ${port}`,
-    swagger: `http://localhost:${port}/api/v1/docs`,
-  }));
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      message: `Job Management Service running on port ${port}`,
+      swagger: `http://localhost:${port}/api/v1/docs`,
+    }),
+  );
 }
 bootstrap();

@@ -13,13 +13,13 @@ export class UsersController {
 
   @Get()
   @ApiOperation({ summary: 'Get current user profile' })
-  getProfile(@Request() req: any) {
+  getProfile(@Request() req: { user: { sub: string } }) {
     return this.usersService.getProfile(req.user.sub);
   }
 
   @Patch()
   @ApiOperation({ summary: 'Update current user profile' })
-  updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+  updateProfile(@Request() req: { user: { sub: string } }, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user.sub, dto);
   }
 }

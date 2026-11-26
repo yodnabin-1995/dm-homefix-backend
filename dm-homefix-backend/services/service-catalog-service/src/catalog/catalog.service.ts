@@ -9,12 +9,29 @@ export class CatalogService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateCategoryDto) {
-    return this.prisma.serviceCategory.create({ data: { id: uuidv4(), nameEn: dto.nameEn, nameAm: dto.nameAm, descriptionEn: dto.descriptionEn, descriptionAm: dto.descriptionAm, isActive: dto.isActive ?? true } });
+    return this.prisma.serviceCategory.create({
+      data: {
+        id: uuidv4(),
+        nameEn: dto.nameEn,
+        nameAm: dto.nameAm,
+        descriptionEn: dto.descriptionEn,
+        descriptionAm: dto.descriptionAm,
+        isActive: dto.isActive ?? true,
+      },
+    });
   }
 
   async findAll(lang: string = 'en') {
-    const cats = await this.prisma.serviceCategory.findMany({ where: { isActive: true }, orderBy: { nameEn: 'asc' } });
-    return cats.map(c => ({ id: c.id, name: lang === 'am' ? c.nameAm : c.nameEn, description: lang === 'am' ? c.descriptionAm : c.descriptionEn, isActive: c.isActive }));
+    const cats = await this.prisma.serviceCategory.findMany({
+      where: { isActive: true },
+      orderBy: { nameEn: 'asc' },
+    });
+    return cats.map((c) => ({
+      id: c.id,
+      name: lang === 'am' ? c.nameAm : c.nameEn,
+      description: lang === 'am' ? c.descriptionAm : c.descriptionEn,
+      isActive: c.isActive,
+    }));
   }
 
   async findAllAdmin() {
@@ -29,7 +46,10 @@ export class CatalogService {
 
   async update(id: string, dto: UpdateCategoryDto) {
     await this.findOne(id);
-    return this.prisma.serviceCategory.update({ where: { id }, data: { ...dto, updatedAt: new Date() } });
+    return this.prisma.serviceCategory.update({
+      where: { id },
+      data: { ...dto, updatedAt: new Date() },
+    });
   }
 
   async deactivate(id: string) {

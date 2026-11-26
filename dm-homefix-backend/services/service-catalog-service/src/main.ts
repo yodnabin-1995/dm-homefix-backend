@@ -24,18 +24,15 @@ async function bootstrap() {
     .setTitle('DM HomeFix — Service Catalog Service')
     .setDescription(
       `Manages the bilingual service category catalog.\n\n` +
-      `**Features:**\n` +
-      `- All categories have English (\`nameEn\`, \`descriptionEn\`) and Amharic (\`nameAm\`, \`descriptionAm\`) content.\n` +
-      `- Public endpoints return the localized name based on the \`?lang=en\` or \`?lang=am\` query parameter.\n` +
-      `- Admin endpoints require ADMIN role for create/update/deactivate.\n` +
-      `- Category IDs are stable UUIDs — safe to store in bookings and historical records.\n\n` +
-      `**Public endpoint (no auth):** \`GET /api/v1/catalog?lang=am\``,
+        `**Features:**\n` +
+        `- All categories have English (\`nameEn\`, \`descriptionEn\`) and Amharic (\`nameAm\`, \`descriptionAm\`) content.\n` +
+        `- Public endpoints return the localized name based on the \`?lang=en\` or \`?lang=am\` query parameter.\n` +
+        `- Admin endpoints require ADMIN role for create/update/deactivate.\n` +
+        `- Category IDs are stable UUIDs — safe to store in bookings and historical records.\n\n` +
+        `**Public endpoint (no auth):** \`GET /api/v1/catalog?lang=am\``,
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-      'JWT',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' }, 'JWT')
     .addTag('catalog', 'Browse and manage service categories')
     .addTag('health', 'Service health check')
     .addServer('http://localhost:3003', 'Local development')
@@ -49,10 +46,12 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3003;
   await app.listen(port);
-  console.log(JSON.stringify({
-    level: 'info',
-    message: `Service Catalog Service running on port ${port}`,
-    swagger: `http://localhost:${port}/api/v1/docs`,
-  }));
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      message: `Service Catalog Service running on port ${port}`,
+      swagger: `http://localhost:${port}/api/v1/docs`,
+    }),
+  );
 }
 bootstrap();

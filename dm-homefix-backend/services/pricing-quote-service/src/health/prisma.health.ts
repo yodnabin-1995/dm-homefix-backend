@@ -3,9 +3,15 @@ import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestj
 import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class PrismaHealthIndicator extends HealthIndicator {
-  constructor(private prisma: PrismaService) { super(); }
+  constructor(private prisma: PrismaService) {
+    super();
+  }
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
-    try { await this.prisma.$queryRaw`SELECT 1`; return this.getStatus(key, true); }
-    catch { throw new HealthCheckError('DB check failed', this.getStatus(key, false)); }
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      return this.getStatus(key, true);
+    } catch {
+      throw new HealthCheckError('DB check failed', this.getStatus(key, false));
+    }
   }
 }

@@ -3,6 +3,11 @@ import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 import { PrismaHealthIndicator } from './prisma.health';
 @Controller('health')
 export class HealthController {
-  constructor(private health: HealthCheckService, private ph: PrismaHealthIndicator) {}
-  @Get() @HealthCheck() check() { return this.health.check([() => this.ph.isHealthy('database')]); }
+  constructor(
+    private health: HealthCheckService,
+    private ph: PrismaHealthIndicator,
+  ) {}
+  @Get() @HealthCheck() check() {
+    return this.health.check([() => this.ph.isHealthy('database')]);
+  }
 }

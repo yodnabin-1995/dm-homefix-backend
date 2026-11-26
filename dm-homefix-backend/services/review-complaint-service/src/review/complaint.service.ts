@@ -8,10 +8,21 @@ export class ComplaintService {
   constructor(private prisma: PrismaService) {}
 
   async create(customerId: string, dto: CreateComplaintDto) {
-    return this.prisma.complaint.create({ data: { id: uuidv4(), bookingId: dto.bookingId, customerId, subject: dto.subject, description: dto.description, status: 'OPEN' } });
+    return this.prisma.complaint.create({
+      data: {
+        id: uuidv4(),
+        bookingId: dto.bookingId,
+        customerId,
+        subject: dto.subject,
+        description: dto.description,
+        status: 'OPEN',
+      },
+    });
   }
 
-  async findAll() { return this.prisma.complaint.findMany({ orderBy: { createdAt: 'desc' } }); }
+  async findAll() {
+    return this.prisma.complaint.findMany({ orderBy: { createdAt: 'desc' } });
+  }
 
   async findOne(id: string) {
     const c = await this.prisma.complaint.findUnique({ where: { id } });
@@ -21,6 +32,14 @@ export class ComplaintService {
 
   async updateStatus(id: string, status: string, adminId: string, resolution?: string) {
     await this.findOne(id);
-    return this.prisma.complaint.update({ where: { id }, data: { status, resolution, resolvedBy: adminId, resolvedAt: ['RESOLVED','CLOSED'].includes(status) ? new Date() : undefined } });
+    return this.prisma.complaint.update({
+      where: { id },
+      data: {
+        status,
+        resolution,
+        resolvedBy: adminId,
+        resolvedAt: ['RESOLVED', 'CLOSED'].includes(status) ? new Date() : undefined,
+      },
+    });
   }
 }

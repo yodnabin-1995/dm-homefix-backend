@@ -8,7 +8,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     HttpModule,
-    JwtModule.registerAsync({ imports: [ConfigModule], useFactory: (c: ConfigService) => ({ secret: c.get('JWT_ACCESS_SECRET') }), inject: [ConfigService] }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (c: ConfigService) => ({ secret: c.get('JWT_ACCESS_SECRET') }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [BookingController],
   providers: [BookingService, JwtStrategy],

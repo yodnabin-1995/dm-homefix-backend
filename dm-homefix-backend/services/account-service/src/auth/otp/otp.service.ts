@@ -43,7 +43,9 @@ export class OtpService {
     const channel = this.config.get('OTP_CHANNEL', 'mock');
     if (channel === 'mock') {
       // DEV ONLY — do not use this in production
-      this.logger.warn(`[DEV MOCK OTP] Account: ${accountId} | Identifier: ${identifier} | OTP: ${otp}`);
+      this.logger.warn(
+        `[DEV MOCK OTP] Account: ${accountId} | Identifier: ${identifier} | OTP: ${otp}`,
+      );
     } else {
       // TODO: integrate real SMS/email provider here
       this.logger.warn(`OTP channel "${channel}" not yet implemented — OTP not sent`);
