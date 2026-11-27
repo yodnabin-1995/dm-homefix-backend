@@ -161,7 +161,8 @@ jobs:
     name: Deploy — Hot-swap changed containers
     needs: [detect-changes, build-and-push]
     runs-on: ubuntu-latest
-    environment: production   # requires DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY secrets
+    continue-on-error: true   # skip gracefully if DEPLOY_HOST secret not configured
+    environment: production
 
     steps:
       - uses: actions/checkout@v4
@@ -196,7 +197,7 @@ jobs:
           echo "Services to deploy: $SERVICES"
 
       - name: SSH into server and hot-swap containers
-        if: steps.script.outputs.services != ''
+        if: steps.script.outputs.services != '' && secrets.DEPLOY_HOST != ''
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
