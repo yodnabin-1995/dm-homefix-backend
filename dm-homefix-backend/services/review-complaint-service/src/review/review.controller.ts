@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -24,7 +15,7 @@ export class ReviewController {
   @Post()
   @Roles('CUSTOMER')
   @ApiOperation({ summary: 'Submit a review after completed job' })
-  create(@Request() req: { user: { sub: string; role: string } }, @Body() dto: CreateReviewDto) {
+  create(@Req() req: { user: { sub: string; role: string } }, @Body() dto: CreateReviewDto) {
     return this.svc.create(req.user.sub, dto);
   }
   @Get('technician/:id')

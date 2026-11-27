@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -13,13 +13,13 @@ export class UsersController {
 
   @Get()
   @ApiOperation({ summary: 'Get current user profile' })
-  getProfile(@Request() req: { user: { sub: string } }) {
+  getProfile(@Req() req: { user: { sub: string } }) {
     return this.usersService.getProfile(req.user.sub);
   }
 
   @Patch()
   @ApiOperation({ summary: 'Update current user profile' })
-  updateProfile(@Request() req: { user: { sub: string } }, @Body() dto: UpdateProfileDto) {
+  updateProfile(@Req() req: { user: { sub: string } }, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user.sub, dto);
   }
 }

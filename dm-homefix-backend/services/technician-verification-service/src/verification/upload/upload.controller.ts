@@ -3,7 +3,7 @@ import {
   Post,
   Param,
   UseGuards,
-  Request,
+  Req,
   UseInterceptors,
   UploadedFile,
   ParseUUIDPipe,
@@ -39,7 +39,7 @@ export class UploadController {
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_SIZE_BYTES } }))
   async uploadDocument(
     @Param('id', ParseUUIDPipe) applicationId: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('No file provided');
@@ -67,13 +67,13 @@ export class UploadController {
 
   /**
    * Get a short-lived pre-signed URL for a document.
-   * Only the owning technician or an admin may request this.
+   * Only the owning technician or an admin may Req this.
    */
   @Post('documents/presign')
   @Roles('TECHNICIAN', 'ADMIN')
   @ApiOperation({ summary: 'Get a 1-hour pre-signed download URL for a document' })
   async presign(
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
     @Param('objectKey') objectKey: string,
   ) {
     const url = await this.storage.getPresignedUrl(

@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Req,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -25,7 +26,7 @@ export class QuoteController {
   @Post()
   @Roles('TECHNICIAN')
   @ApiOperation({ summary: 'Technician: submit a quote' })
-  create(@Request() req: { user: { sub: string; role: string } }, @Body() dto: CreateQuoteDto) {
+  create(@Req() req: { user: { sub: string; role: string } }, @Body() dto: CreateQuoteDto) {
     return this.svc.createQuote(req.user.sub, dto);
   }
 

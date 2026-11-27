@@ -6,7 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
-  Request,
+  Req,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -34,7 +34,7 @@ export class ComplaintController {
   @Post()
   @Roles('CUSTOMER')
   @ApiOperation({ summary: 'Submit a complaint' })
-  create(@Request() req: { user: { sub: string; role: string } }, @Body() dto: CreateComplaintDto) {
+  create(@Req() req: { user: { sub: string; role: string } }, @Body() dto: CreateComplaintDto) {
     return this.svc.create(req.user.sub, dto);
   }
   @Get()
@@ -54,7 +54,7 @@ export class ComplaintController {
   @ApiOperation({ summary: 'Admin: update complaint status' })
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
     @Body() dto: UpdateComplaintDto,
   ) {
     return this.svc.updateStatus(id, dto.status, req.user.sub, dto.resolution);

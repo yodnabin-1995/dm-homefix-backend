@@ -6,7 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
-  Request,
+  Req,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -26,14 +26,14 @@ export class BookingController {
   @Post()
   @Roles('CUSTOMER')
   @ApiOperation({ summary: 'Create a booking request' })
-  create(@Request() req: { user: { sub: string; role: string } }, @Body() dto: CreateBookingDto) {
+  create(@Req() req: { user: { sub: string; role: string } }, @Body() dto: CreateBookingDto) {
     return this.svc.create(req.user.sub, dto);
   }
 
   @Get()
   @Roles('CUSTOMER')
   @ApiOperation({ summary: 'List my bookings' })
-  findAll(@Request() req: { user: { sub: string; role: string } }) {
+  findAll(@Req() req: { user: { sub: string; role: string } }) {
     return this.svc.findAll(req.user.sub);
   }
 
@@ -49,7 +49,7 @@ export class BookingController {
   @ApiOperation({ summary: 'Get booking by ID' })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
   ) {
     return this.svc.findOne(id, req.user.sub, req.user.role);
   }
@@ -59,7 +59,7 @@ export class BookingController {
   @ApiOperation({ summary: 'Cancel a booking' })
   cancel(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
   ) {
     return this.svc.cancel(id, req.user.sub);
   }

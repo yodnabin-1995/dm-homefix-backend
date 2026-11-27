@@ -1,7 +1,6 @@
 import { Injectable, BadGatewayException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { Method } from 'axios';
 

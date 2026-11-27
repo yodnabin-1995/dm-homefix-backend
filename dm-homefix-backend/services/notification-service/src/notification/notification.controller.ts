@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NotificationService } from './notification.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
@@ -20,7 +20,7 @@ export class NotificationController {
   }
   @Get('my')
   @ApiOperation({ summary: 'Get my notifications' })
-  mine(@Request() req: { user: { sub: string; role: string } }) {
+  mine(@Req() req: { user: { sub: string; role: string } }) {
     return this.svc.getForRecipient(req.user.sub);
   }
 }

@@ -6,7 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
-  Request,
+  Req,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -41,7 +41,7 @@ export class JobController {
   @Get('my')
   @Roles('TECHNICIAN')
   @ApiOperation({ summary: 'Technician: list my jobs' })
-  myJobs(@Request() req: { user: { sub: string; role: string } }) {
+  myJobs(@Req() req: { user: { sub: string; role: string } }) {
     return this.svc.getJobsByTechnician(req.user.sub);
   }
 
@@ -57,7 +57,7 @@ export class JobController {
   @ApiOperation({ summary: 'Update job status' })
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
     @Body() dto: UpdateJobStatusDto,
   ) {
     return this.svc.updateStatus(id, req.user.sub, req.user.role, dto);

@@ -7,13 +7,22 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { AccountRole, AccountStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { OtpService } from './otp/otp.service';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
+
+// Use string constants instead of @prisma/client enums
+// (Prisma enums are only available after prisma generate which requires a DB connection)
+const AccountRole = { CUSTOMER: 'CUSTOMER', TECHNICIAN: 'TECHNICIAN', ADMIN: 'ADMIN' } as const;
+const AccountStatus = {
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  DEACTIVATED: 'DEACTIVATED',
+} as const;
 
 @Injectable()
 export class AuthService {
@@ -45,8 +54,8 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         passwordHash,
-        role: (dto.role as AccountRole) ?? AccountRole.CUSTOMER,
-        status: AccountStatus.PENDING_VERIFICATION,
+        role: (dto.role ?? AccountRole.CUSTOMER) as string,
+        status: AccountStatus.PENDING_VERIFICATION as string,
         preferredLanguage: dto.preferredLanguage ?? 'en',
       },
     });

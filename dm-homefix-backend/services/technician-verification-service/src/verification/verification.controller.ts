@@ -6,7 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
-  Request,
+  Req,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -28,10 +28,7 @@ export class VerificationController {
   @Post('applications')
   @Roles('TECHNICIAN')
   @ApiOperation({ summary: 'Create a draft verification application' })
-  create(
-    @Request() req: { user: { sub: string; role: string } },
-    @Body() dto: CreateApplicationDto,
-  ) {
+  create(@Req() req: { user: { sub: string; role: string } }, @Body() dto: CreateApplicationDto) {
     return this.svc.createApplication(req.user.sub, dto);
   }
 
@@ -40,7 +37,7 @@ export class VerificationController {
   @ApiOperation({ summary: 'Submit draft application for admin review' })
   submit(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
   ) {
     return this.svc.submitApplication(id, req.user.sub);
   }
@@ -50,7 +47,7 @@ export class VerificationController {
   @ApiOperation({ summary: 'Resubmit application after information was requested' })
   resubmit(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
     @Body() dto: CreateApplicationDto,
   ) {
     return this.svc.resubmitApplication(id, req.user.sub, dto);
@@ -59,7 +56,7 @@ export class VerificationController {
   @Get('applications/my')
   @Roles('TECHNICIAN')
   @ApiOperation({ summary: 'Technician: get my verification applications' })
-  mine(@Request() req: { user: { sub: string; role: string } }) {
+  mine(@Req() req: { user: { sub: string; role: string } }) {
     return this.svc.getMyApplications(req.user.sub);
   }
 
@@ -79,10 +76,10 @@ export class VerificationController {
 
   @Post('applications/:id/review')
   @Roles('ADMIN')
-  @ApiOperation({ summary: 'Admin: approve, reject or request more information' })
+  @ApiOperation({ summary: 'Admin: approve, reject or Req more information' })
   review(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req: { user: { sub: string; role: string } },
+    @Req() req: { user: { sub: string; role: string } },
     @Body() dto: ReviewDecisionDto,
   ) {
     return this.svc.reviewApplication(id, req.user.sub, dto);
