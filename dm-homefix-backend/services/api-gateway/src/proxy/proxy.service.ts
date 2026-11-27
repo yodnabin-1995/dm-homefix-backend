@@ -1,6 +1,7 @@
 import { Injectable, BadGatewayException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { Method } from 'axios';
 
@@ -31,9 +32,9 @@ export class ProxyService {
     if (!base) throw new BadGatewayException(`Unknown service: ${service}`);
 
     const url = `${base}${req.url}`;
-    const correlationId = req.headers['x-correlation-id'] as string;
+    const correlationId = (req.headers['x-correlation-id'] as string) ?? '';
 
-    // Build a clean headers object — omit 'host' so axios uses the target host
+    // Build a clean headers object — omit host so axios uses the target host
     const forwardHeaders: Record<string, string> = {};
     for (const [key, value] of Object.entries(req.headers)) {
       if (key === 'host') continue;

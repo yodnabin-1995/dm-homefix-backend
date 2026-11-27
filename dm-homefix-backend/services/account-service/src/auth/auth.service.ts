@@ -14,15 +14,12 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 
-// Use string constants instead of @prisma/client enums
-// (Prisma enums are only available after prisma generate which requires a DB connection)
-const AccountRole = { CUSTOMER: 'CUSTOMER', TECHNICIAN: 'TECHNICIAN', ADMIN: 'ADMIN' } as const;
-const AccountStatus = {
-  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  DEACTIVATED: 'DEACTIVATED',
-} as const;
+// Plain-string enum values matching schema.prisma — no @prisma/client import needed
+// (prisma generate is required for @prisma/client enum types, not for string values)
+type AccountRole = 'CUSTOMER' | 'TECHNICIAN' | 'ADMIN';
+type AccountStatus = 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+
+type AccountFromDb = { id: string; role: AccountRole | string; email?: string | null };
 
 @Injectable()
 export class AuthService {
@@ -34,7 +31,6 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    // Check for duplicate identifier
     if (dto.email) {
       const existing = await this.prisma.account.findUnique({ where: { email: dto.email } });
       if (existing) throw new ConflictException('EMAIL_TAKEN');
@@ -45,22 +41,23 @@ export class AuthService {
     }
 
     const passwordHash = await argon2.hash(dto.password);
+    const role = (dto.role ?? 'CUSTOMER') as AccountRole;
+    const status = 'PENDING_VERIFICATION' as AccountStatus;
 
-    const account = await this.prisma.account.create({
-      data: {
-        id: uuidv4(),
-        email: dto.email,
-        phone: dto.phone,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        passwordHash,
-        role: (dto.role ?? AccountRole.CUSTOMER) as string,
-        status: AccountStatus.PENDING_VERIFICATION as string,
-        preferredLanguage: dto.preferredLanguage ?? 'en',
-      },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = {
+      id: uuidv4(),
+      email: dto.email,
+      phone: dto.phone,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      passwordHash,
+      role,
+      status,
+      preferredLanguage: dto.preferredLanguage ?? 'en',
+    };
 
-    // Send OTP
+    const account = await this.prisma.account.create({ data });
     const identifier = dto.email ?? dto.phone!;
     await this.otpService.sendOtp(account.id, identifier);
 
@@ -72,9 +69,7 @@ export class AuthService {
 
   async validateCredentials(identifier: string, password: string) {
     const account = await this.prisma.account.findFirst({
-      where: {
-        OR: [{ email: identifier }, { phone: identifier }],
-      },
+      where: { OR: [{ email: identifier }, { phone: identifier }] },
     });
     if (!account) throw new UnauthorizedException('INVALID_CREDENTIALS');
 
@@ -87,8 +82,8 @@ export class AuthService {
     return account;
   }
 
-  async login(account: { id: string; role: string; email?: string }) {
-    const payload = { sub: account.id, role: account.role, email: account.email };
+  async login(account: AccountFromDb) {
+    const payload = { sub: account.id, role: account.role, email: account.email ?? undefined };
 
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
@@ -96,7 +91,6 @@ export class AuthService {
       expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN', '7d'),
     });
 
-    // Store hashed refresh token
     const refreshHash = await argon2.hash(refreshToken);
     await this.prisma.refreshToken.create({
       data: {
@@ -114,10 +108,10 @@ export class AuthService {
     const result = await this.otpService.verifyOtp(dto.accountId, dto.otp);
     if (!result) throw new BadRequestException('INVALID_OR_EXPIRED_OTP');
 
-    // Activate account
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await this.prisma.account.update({
       where: { id: dto.accountId },
-      data: { status: 'ACTIVE', isEmailVerified: true },
+      data: { status: 'ACTIVE' as AccountStatus, isEmailVerified: true } as never,
     });
 
     return { message: 'Contact verified successfully' };
@@ -138,13 +132,13 @@ export class AuthService {
 
     if (!matched) throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
 
-    // Rotate: revoke old, issue new
     await this.prisma.refreshToken.update({
       where: { id: matched.id },
       data: { revokedAt: new Date() },
     });
 
     const account = await this.prisma.account.findUnique({ where: { id: accountId } });
+    if (!account) throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
     return this.login(account);
   }
 
