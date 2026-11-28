@@ -101,12 +101,25 @@
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
       OTP_SECRET: ${OTP_SECRET}
       OTP_CHANNEL: ${OTP_CHANNEL:-mock}
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-DM HomeFix <noreply@dmhomefix.com>}
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: 'false'
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-dmhomefix}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-dmhomefix_dev}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
     ports:
       - '3001:3001'
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      minio:
         condition: service_healthy
 
   technician-verification-service:

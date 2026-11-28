@@ -32,6 +32,7 @@ model Account {
   status            AccountStatus @default(PENDING_VERIFICATION)
   preferredLanguage String        @default("en")
   serviceLocation   String?
+  avatarUrl         String?
   isEmailVerified   Boolean       @default(false)
   isPhoneVerified   Boolean       @default(false)
   createdAt         DateTime      @default(now())

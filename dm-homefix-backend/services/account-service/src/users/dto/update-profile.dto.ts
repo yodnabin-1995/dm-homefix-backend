@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsIn, MaxLength } from 'class-validator';
+import { IsOptional, IsString, IsIn, MaxLength, IsUrl } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateProfileDto {
@@ -24,4 +24,9 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(255)
   serviceLocation?: string;
+
+  @ApiPropertyOptional({ description: 'MinIO object key for profile avatar' })
+  @IsOptional()
+  @IsString()
+  avatarKey?: string;
 }

@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
   async findById(id: string) {
     const user = await this.prisma.account.findUnique({ where: { id } });
@@ -21,16 +25,26 @@ export class UsersService {
   }
 
   async updateProfile(id: string, dto: UpdateProfileDto) {
-    return this.prisma.account.update({
-      where: { id },
-      data: {
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        preferredLanguage: dto.preferredLanguage,
-        serviceLocation: dto.serviceLocation,
-        updatedAt: new Date(),
-      },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = {
+      updatedAt: new Date(),
+    };
+    if (dto.firstName !== undefined) data.firstName = dto.firstName;
+    if (dto.lastName !== undefined) data.lastName = dto.lastName;
+    if (dto.preferredLanguage !== undefined) data.preferredLanguage = dto.preferredLanguage;
+    if (dto.serviceLocation !== undefined) data.serviceLocation = dto.serviceLocation;
+    if (dto.avatarKey !== undefined) {
+      data.avatarUrl = this.storage.getPublicUrl(dto.avatarKey);
+    }
+    return this.prisma.account.update({ where: { id }, data });
+  }
+
+  async uploadAvatar(id: string, file: Express.Multer.File): Promise<{ avatarUrl: string }> {
+    const objectKey = await this.storage.uploadAvatar(id, file.buffer, file.mimetype);
+    const avatarUrl = this.storage.getPublicUrl(objectKey);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await this.prisma.account.update({ where: { id }, data: { avatarUrl } as any });
+    return { avatarUrl };
   }
 
   async getProfile(id: string) {
@@ -46,6 +60,7 @@ export class UsersService {
         status: true,
         preferredLanguage: true,
         serviceLocation: true,
+        avatarUrl: true,
         isEmailVerified: true,
         isPhoneVerified: true,
         createdAt: true,
