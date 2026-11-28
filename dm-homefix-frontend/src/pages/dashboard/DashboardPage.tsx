@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+﻿import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { bookingApi } from '../../lib/api'
@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/authStore'
 import DashboardSidebar from '../../components/DashboardSidebar'
 import StatCard from '../../components/StatCard'
 import StatusBadge from '../../components/StatusBadge'
-import { CalendarCheck, CheckCircle, Star, Wallet, CalendarDays, Zap, Bell, ChevronDown } from 'lucide-react'
+import { CalendarCheck, CheckCircle, Star, Wallet, CalendarDays, Bell, ChevronDown } from 'lucide-react'
 import { formatDateTime } from '../../lib/utils'
 import {
   AreaChart, Area, PieChart, Pie, Cell,
@@ -113,14 +113,14 @@ export default function DashboardPage() {
             <div className="absolute inset-0 flex items-center px-8 gap-5">
               {/* Handshake icon circle */}
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 backdrop-blur-sm border border-white/30">
-                <span className="text-3xl">🤝</span>
+                <span className="text-3xl">ðŸ¤</span>
               </div>
               <div className="text-white">
                 <h1 className="text-2xl font-bold mb-0.5">Welcome back, {user?.firstName}!</h1>
                 <p className="text-white/75 text-sm mb-3">Find trusted home repair services in Debre Markos.</p>
                 <Link to="/book"
                   className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-5 py-2 rounded-full border border-white/20 transition-colors">
-                  Book a Service →
+                  Book a Service â†’
                 </Link>
               </div>
             </div>
@@ -218,13 +218,13 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
-                      <span className="text-2xl">🏠</span>
+                      <span className="text-2xl">ðŸ </span>
                     </div>
                   </div>
                 </div>
                 <Link to="/book"
                   className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors self-start mt-2">
-                  Book a Service ✦
+                  Book a Service âœ¦
                 </Link>
               </div>
             </div>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between px-5 py-4">
                 <h2 className="font-bold text-gray-900">Recent Bookings</h2>
                 <Link to="/dashboard/bookings" className="text-xs text-primary-600 font-semibold hover:underline flex items-center gap-1">
-                  View All →
+                  View All â†’
                 </Link>
               </div>
               <div className="overflow-x-auto">
@@ -295,10 +295,10 @@ export default function DashboardPage() {
               <h2 className="font-bold text-gray-900 mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Book a Service',  to: '/book',              emoji: '📅', bg: 'bg-primary-50',  color: 'text-primary-600' },
-                  { label: 'Find a Technician', to: '/technicians',     emoji: '🔧', bg: 'bg-orange-50',   color: 'text-orange-600'  },
-                  { label: 'View Reviews',    to: '/reviews',           emoji: '⭐', bg: 'bg-yellow-50',   color: 'text-yellow-600'  },
-                  { label: 'Get Support',     to: '/dashboard/support', emoji: '🎧', bg: 'bg-green-50',    color: 'text-green-600'   },
+                  { label: 'Book a Service',  to: '/book',              emoji: 'ðŸ“…', bg: 'bg-primary-50',  color: 'text-primary-600' },
+                  { label: 'Find a Technician', to: '/technicians',     emoji: 'ðŸ”§', bg: 'bg-orange-50',   color: 'text-orange-600'  },
+                  { label: 'View Reviews',    to: '/reviews',           emoji: 'â­', bg: 'bg-yellow-50',   color: 'text-yellow-600'  },
+                  { label: 'Get Support',     to: '/dashboard/support', emoji: 'ðŸŽ§', bg: 'bg-green-50',    color: 'text-green-600'   },
                 ].map(({ label, to, emoji, bg }) => (
                   <Link key={label} to={to}
                     className={`flex flex-col items-center gap-2 p-4 ${bg} rounded-2xl hover:scale-105 transition-transform cursor-pointer text-center`}>
@@ -315,3 +315,4 @@ export default function DashboardPage() {
     </div>
   )
 }
+

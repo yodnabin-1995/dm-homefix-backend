@@ -1,7 +1,7 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import DashboardSidebar from '../../components/DashboardSidebar'
 import { Link } from 'react-router-dom'
-import { Heart, MapPin, Star, CheckCircle, Trash2 } from 'lucide-react'
+import { Heart, MapPin, Star, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 // Favorites are stored locally (no backend endpoint yet)
@@ -118,11 +118,12 @@ export default function FavoritesPage() {
 
         {favorites.length > 0 && (
           <p className="text-xs text-gray-400 mt-6 text-center">
-            Click the ❤️ icon on any technician to remove from favorites.{' '}
-            <Link to="/technicians" className="text-primary-600 hover:underline">Browse more technicians →</Link>
+            Click the â¤ï¸ icon on any technician to remove from favorites.{' '}
+            <Link to="/technicians" className="text-primary-600 hover:underline">Browse more technicians â†’</Link>
           </p>
         )}
       </main>
     </div>
   )
 }
+
